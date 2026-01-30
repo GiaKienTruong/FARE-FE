@@ -9,7 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 
-// Import screens (sẽ tạo sau)
+// Import screens
 import AICheckScreen from './src/screens/ai/AICheckScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import CameraScreen from './src/screens/camera/CameraScreen';

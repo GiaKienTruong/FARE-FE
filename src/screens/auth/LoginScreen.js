@@ -2,18 +2,19 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import api from '../../config/api';
 import { auth } from '../../config/firebase';
+import { testBackendConnection } from '../../utils/testAPI';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -33,22 +34,26 @@ export default function LoginScreen() {
       if (isLogin) {
         // Đăng nhập
         await signInWithEmailAndPassword(auth, email, password);
+        Alert.alert('Thành công', 'Đăng nhập thành công!');
       } else {
         // Đăng ký
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         
         // Đăng ký user vào backend
         try {
-          await api.post('/api/auth/register', {
+          const response = await api.post('/api/auth/register', {
             email: email,
             displayName: email.split('@')[0],
             height: 170,
             weight: 65,
             gender: 'male',
           });
+          console.log('✅ Backend registration success:', response.data);
+          Alert.alert('Thành công', 'Đăng ký thành công!');
         } catch (error) {
-          console.log('Backend registration error:', error);
-          // Không cần Alert vì có thể user đã tồn tại
+          console.log('⚠️ Backend registration error:', error);
+          // Không cần Alert vì có thể user đã tồn tại, nhưng Firebase auth đã thành công
+          Alert.alert('Thành công', 'Đăng ký thành công! (Backend sync sẽ diễn ra sau)');
         }
       }
     } catch (error) {
@@ -76,6 +81,17 @@ export default function LoginScreen() {
   const quickLogin = () => {
     setEmail('test@fare.com');
     setPassword('123456');
+  };
+
+  // Test backend connection
+  const testConnection = async () => {
+    const result = await testBackendConnection();
+    Alert.alert(
+      result.success ? '✅ Kết nối thành công!' : '❌ Kết nối thất bại',
+      result.success 
+        ? `Backend đang chạy!\n${JSON.stringify(result.data, null, 2)}`
+        : `Lỗi: ${result.error}\n\nHãy chắc chắn backend đang chạy:\ncd fare-backend && npm run dev`
+    );
   };
 
   return (
@@ -130,14 +146,23 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Quick login button cho test */}
+          {/* Development tools */}
           {__DEV__ && (
-            <TouchableOpacity
-              style={styles.quickLoginBtn}
-              onPress={quickLogin}
-            >
-              <Text style={styles.quickLoginText}>🧪 Quick Login (test)</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                style={styles.quickLoginBtn}
+                onPress={quickLogin}
+              >
+                <Text style={styles.quickLoginText}>🧪 Quick Login (test)</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.testBtn}
+                onPress={testConnection}
+              >
+                <Text style={styles.testBtnText}>🔗 Test Backend Connection</Text>
+              </TouchableOpacity>
+            </>
           )}
         </View>
       </View>
@@ -209,6 +234,18 @@ const styles = StyleSheet.create({
   },
   quickLoginText: {
     color: '#92400e',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  testBtn: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  testBtnText: {
+    color: '#0369a1',
     fontSize: 12,
     fontWeight: '600',
   },
