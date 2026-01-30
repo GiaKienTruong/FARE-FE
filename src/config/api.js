@@ -8,9 +8,10 @@ import { getAuth } from 'firebase/auth';
 // Khi test trên điện thoại thật, thay bằng IP máy tính
 // Ví dụ: http://192.168.1.100:3000
 export const API_BASE_URL = __DEV__ 
-  ? 'http://localhost:3000'  // Emulator/Simulator
+  ? Platform.OS === 'android' 
+    ? 'http://10.0.2.2:3000'  // Android Emulator
+    : 'http://localhost:3000'  // iOS Simulator
   : 'https://your-production-api.com';
-
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { auth } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
 
-export function ProfileScreen() {
+export default function ProfileScreen() {
   const { user } = useAuth();
 
   const handleLogout = () => {
@@ -64,6 +64,7 @@ export function ProfileScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -84,25 +85,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  note: {
-    fontSize: 14,
-    color: '#9ca3af',
-    marginTop: 8,
-    fontStyle: 'italic',
   },
   profileSection: {
     alignItems: 'center',
     marginBottom: 32,
+    marginTop: 20,
   },
   avatar: {
     width: 80,
