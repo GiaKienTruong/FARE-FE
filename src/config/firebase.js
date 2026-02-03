@@ -1,10 +1,8 @@
 // src/config/firebase.js
-// Firebase configuration
+// Firebase configuration using compat mode for Expo Go compatibility
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-
-// Firebase config - lấy từ Firebase Console
 const firebaseConfig = {
   apiKey: "AIzaSyDdjO9WSHHSU4MUI-EJIB4Ejkt-V1b4F08",
   authDomain: "fare-50123.firebaseapp.com",
@@ -15,10 +13,12 @@ const firebaseConfig = {
   measurementId: "G-6LT7YG62T2"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase App (singleton pattern)
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(firebaseConfig);
+}
 
-// Initialize Firebase Authentication
-export const auth = getAuth(app);
+const auth = firebase.auth();
 
-export default app;
+export { auth };
+export default firebase;

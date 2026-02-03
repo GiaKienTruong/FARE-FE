@@ -33,7 +33,7 @@ export default function HomeScreen({ navigation }) {
                         source={{ uri: 'https://via.placeholder.com/40' }}
                         style={styles.avatar}
                     />
-                    <Text style={styles.greeting}>Hi Dino!</Text>
+                    <Text style={styles.greeting}>Hi {user?.displayName || 'User'}!</Text>
                 </View>
                 <TouchableOpacity>
                     <Ionicons name="notifications-outline" size={24} color="black" />
@@ -102,14 +102,6 @@ export default function HomeScreen({ navigation }) {
                 <View style={{ height: 100 }} />
             </ScrollView>
 
-            {/* Bottom Tab Bar Fake */}
-            <View style={styles.bottomTab}>
-                <Ionicons name="home" size={24} color="black" />
-                <Ionicons name="grid-outline" size={24} color="#9ca3af" />
-                <View style={styles.addBtn}><Ionicons name="shirt-outline" size={24} color="black" /></View>
-                <Ionicons name="bag-outline" size={24} color="#9ca3af" />
-                <Ionicons name="person-outline" size={24} color="#9ca3af" />
-            </View>
         </View>
     );
 }
@@ -196,19 +188,4 @@ const styles = StyleSheet.create({
     },
     statsNumber: { fontSize: 24, fontWeight: 'bold', color: '#4facfe' },
     statsText: { fontSize: 12, color: '#666' },
-
-    bottomTab: {
-        position: 'absolute',
-        bottom: 30,
-        left: 20,
-        right: 20,
-        height: 60,
-        backgroundColor: '#F8F8F8',
-        borderRadius: 30,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        elevation: 5,
-    },
-    addBtn: { width: 45, height: 45, backgroundColor: 'white', borderRadius: 22.5, justifyContent: 'center', alignItems: 'center' }
 });
