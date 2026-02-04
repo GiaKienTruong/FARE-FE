@@ -2,16 +2,16 @@
 // API configuration và axios setup
 
 import axios from 'axios';
-import { getAuth } from 'firebase/auth';
+import { auth } from './firebase'; // Import từ firebase.js thay vì getAuth
 
 // API Base URL
-// Khi test trên điện thoại thật, thay bằng IP máy tính
-// Ví dụ: http://192.168.1.100:3000
+// Android Emulator: dùng 10.0.2.2
+// iOS Simulator: dùng localhost
+// Điện thoại thật: dùng IP máy tính
 export const API_BASE_URL = __DEV__ 
-  ? Platform.OS === 'android' 
-    ? 'http://10.0.2.2:3000'  // Android Emulator
-    : 'http://localhost:3000'  // iOS Simulator
+  ? 'http://10.0.2.2:3000'  // Android Emulator
   : 'https://your-production-api.com';
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -25,7 +25,6 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      const auth = getAuth();
       const user = auth.currentUser;
       
       if (user) {
@@ -48,18 +47,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Server responded with error
       console.error('API Error:', error.response.status, error.response.data);
       
       if (error.response.status === 401) {
-        // Unauthorized - có thể logout user
         console.log('Unauthorized - please login again');
       }
     } else if (error.request) {
-      // Request made but no response
       console.error('Network Error:', error.message);
     } else {
-      // Something else happened
       console.error('Error:', error.message);
     }
     

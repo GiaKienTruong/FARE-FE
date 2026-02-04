@@ -1,9 +1,9 @@
 // src/screens/auth/LoginScreen.js
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -32,13 +32,13 @@ export default function LoginScreen() {
 
     try {
       if (isLogin) {
-        // Đăng nhập
-        await signInWithEmailAndPassword(auth, email, password);
+        // Đăng nhập (compat mode)
+        await auth.signInWithEmailAndPassword(email, password);
         Alert.alert('Thành công', 'Đăng nhập thành công!');
       } else {
-        // Đăng ký
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        
+        // Đăng ký (compat mode)
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+
         // Đăng ký user vào backend
         try {
           const response = await api.post('/api/auth/register', {
@@ -52,13 +52,12 @@ export default function LoginScreen() {
           Alert.alert('Thành công', 'Đăng ký thành công!');
         } catch (error) {
           console.log('⚠️ Backend registration error:', error);
-          // Không cần Alert vì có thể user đã tồn tại, nhưng Firebase auth đã thành công
           Alert.alert('Thành công', 'Đăng ký thành công! (Backend sync sẽ diễn ra sau)');
         }
       }
     } catch (error) {
       let message = 'Có lỗi xảy ra';
-      
+
       if (error.code === 'auth/invalid-email') {
         message = 'Email không hợp lệ';
       } else if (error.code === 'auth/user-not-found') {
@@ -70,7 +69,7 @@ export default function LoginScreen() {
       } else if (error.code === 'auth/weak-password') {
         message = 'Mật khẩu phải có ít nhất 6 ký tự';
       }
-      
+
       Alert.alert('Lỗi', message);
     } finally {
       setLoading(false);
@@ -88,7 +87,7 @@ export default function LoginScreen() {
     const result = await testBackendConnection();
     Alert.alert(
       result.success ? '✅ Kết nối thành công!' : '❌ Kết nối thất bại',
-      result.success 
+      result.success
         ? `Backend đang chạy!\n${JSON.stringify(result.data, null, 2)}`
         : `Lỗi: ${result.error}\n\nHãy chắc chắn backend đang chạy:\ncd fare-backend && npm run dev`
     );
@@ -100,7 +99,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
-        <Text style={styles.logo}>FARE</Text>
+        <Image source={require('../../../src/assets/logo.png')} style={styles.logoImage} />
         <Text style={styles.subtitle}>AI Virtual Try-On</Text>
 
         <View style={styles.form}>
@@ -145,25 +144,6 @@ export default function LoginScreen() {
               {isLogin ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}
             </Text>
           </TouchableOpacity>
-
-          {/* Development tools */}
-          {__DEV__ && (
-            <>
-              <TouchableOpacity
-                style={styles.quickLoginBtn}
-                onPress={quickLogin}
-              >
-                <Text style={styles.quickLoginText}>🧪 Quick Login (test)</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.testBtn}
-                onPress={testConnection}
-              >
-                <Text style={styles.testBtnText}>🔗 Test Backend Connection</Text>
-              </TouchableOpacity>
-            </>
-          )}
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -180,12 +160,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
-  logo: {
-    fontSize: 56,
-    fontWeight: 'bold',
-    color: '#6366f1',
-    textAlign: 'center',
-    marginBottom: 8,
+  logoImage: {
+    width: 350,
+    height: 350,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginBottom: 20,
   },
   subtitle: {
     fontSize: 16,
@@ -206,7 +186,7 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   button: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#71D5F3',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -222,31 +202,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchText: {
-    color: '#6366f1',
+    color: '#71D5F3',
     fontSize: 14,
-  },
-  quickLoginBtn: {
-    marginTop: 24,
-    padding: 12,
-    backgroundColor: '#fef3c7',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  quickLoginText: {
-    color: '#92400e',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  testBtn: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: '#e0f2fe',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  testBtnText: {
-    color: '#0369a1',
-    fontSize: 12,
-    fontWeight: '600',
   },
 });

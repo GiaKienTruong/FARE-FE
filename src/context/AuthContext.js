@@ -1,9 +1,8 @@
 // src/context/AuthContext.js
 // Authentication context và state management
 
-import { onAuthStateChanged } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from '../config/firebase';
+import { auth } from '../config/firebase'; // Import auth đã init sẵn
 
 const AuthContext = createContext();
 
@@ -12,8 +11,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen to auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    // Listen to auth state changes (compat mode uses onAuthStateChanged method)
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
