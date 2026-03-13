@@ -5,17 +5,26 @@ import axios from 'axios';
 import { auth } from './firebase'; // Import từ firebase.js thay vì getAuth
 
 // API Base URL
-// Android Emulator: dùng 10.0.2.2
-// iOS Simulator: dùng localhost
-// Điện thoại thật: dùng IP máy tính
-export const API_BASE_URL = __DEV__ 
-  ? 'http://10.0.2.2:3000'  // Android Emulator
-  : 'https://your-production-api.com';
+// Use dynamic IP for Expo Go on physical device
+
+const getBaseUrl = () => {
+  // Replace with your actual Render/Cloud URL after deployment
+  // For example: 'https://fare-be.onrender.com'
+  const productionUrl = 'https://YOUR_BACKEND_URL.onrender.com';
+  
+  if (__DEV__) {
+    return 'http://192.168.9.112:3000';
+  }
+  return productionUrl;
+};
+
+export const API_BASE_URL = getBaseUrl();
+console.log('🔗 [API URL]:', API_BASE_URL);
 
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 1800000, // 30 minutes for long AI operations
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,7 +35,7 @@ api.interceptors.request.use(
   async (config) => {
     try {
       const user = auth.currentUser;
-      
+
       if (user) {
         const token = await user.getIdToken();
         config.headers.Authorization = `Bearer ${token}`;
@@ -34,7 +43,7 @@ api.interceptors.request.use(
     } catch (error) {
       console.error('Error getting auth token:', error);
     }
-    
+
     return config;
   },
   (error) => {
@@ -48,7 +57,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.error('API Error:', error.response.status, error.response.data);
-      
+
       if (error.response.status === 401) {
         console.log('Unauthorized - please login again');
       }
@@ -57,7 +66,7 @@ api.interceptors.response.use(
     } else {
       console.error('Error:', error.message);
     }
-    
+
     return Promise.reject(error);
   }
 );

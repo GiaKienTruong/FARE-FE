@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import aiService from '../../services/aiService';
+import wardrobeService from '../../services/wardrobeService';
 
 export default function AICheckScreen() {
   const [image, setImage] = useState(null);
@@ -9,6 +11,12 @@ export default function AICheckScreen() {
   const [result, setResult] = useState(null);
 
   const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Quyền truy cập bị từ chối', 'Vui lòng cấp quyền truy cập thư viện ảnh để sử dụng tính năng này.');
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -21,19 +29,52 @@ export default function AICheckScreen() {
     }
   };
 
-  const analyzeStyle = () => {
+  const analyzeStyle = async () => {
     if (!image) return;
 
     setLoading(true);
-    // Mock AI analysis process
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // 1. Upload item first (Backend requires itemID for style check)
+      const filename = image.split('/').pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image`;
+
+      const formData = new FormData();
+      formData.append('image', { uri: image, name: filename, type });
+      formData.append('name', 'Analyzed Item');
+      formData.append('category', 'top'); // Defaulting to top for analysis
+      formData.append('color', 'unknown');
+
+      // Call wardrobe service to upload
+      const uploadRes = await wardrobeService.addItem(formData);
+      const itemId = uploadRes.item.id;
+
+      // 2. Call AI Service
+      const aiResponse = await aiService.checkStyle(itemId);
+
+      // 3. Format result — support both camelCase and snake_case from backend
+      const recommendations = aiResponse.recommendations || [];
+      const recText = recommendations.length > 0
+        ? `We found ${recommendations.length} matching items in your wardrobe!`
+        : 'Nice item! Add more clothes to get better matching advice.';
+
+      // Derive score from API response (support various field names)
+      const rawScore = aiResponse.style_score ?? aiResponse.styleScore ?? aiResponse.score ?? null;
+      const scoreDisplay = rawScore !== null ? `${rawScore}/10` : 'N/A';
+
       setResult({
-        score: '9.5/10',
-        feedback: "Amazing outfit! The color coordination is perfect for a casual summer day. Maybe add a watch to complete the look.",
-        tags: ['Casual', 'Summer', 'Trendy']
+        score: scoreDisplay,
+        feedback: aiResponse.message || aiResponse.feedback || recText,
+        tags: aiResponse.tags || ['Style Check'],
+        recommendations: recommendations
       });
-    }, 2000);
+
+    } catch (error) {
+      console.error('AI Check error:', error);
+      Alert.alert('Error', 'Failed to analyze style. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
