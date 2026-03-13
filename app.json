@@ -2,22 +2,47 @@
   "expo": {
     "name": "fare-mobile",
     "slug": "fare-mobile",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6366f1"
+    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fare.mobile"
+      "bundleIdentifier": "com.fare.mobile",
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.fare.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#6366f1"
-      }
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_MEDIA_LOCATION"
+      ]
     },
     "plugins": [
       "expo-asset",
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow FARE to save try-on photos to your gallery.",
+          "savePhotosPermission": "Allow FARE to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8c1d9890-4fb6-4f91-9e37-f512b0bc8abd"
+      }
+    }
   }
 }

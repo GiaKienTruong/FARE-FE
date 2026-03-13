@@ -11,9 +11,32 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen to auth state changes (compat mode uses onAuthStateChanged method)
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      setUser(currentUser);
+    // Listen to auth state changes
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (currentUser) {
+        try {
+          // Import API dynamically to avoid circular dependencies if any
+          const api = require('../config/api').default;
+          
+          // Call sync endpoint to ensure user exists in our DB
+          console.log('🔄 Syncing user with backend...');
+          const response = await api.post('/api/auth/sync');
+          
+          // Combine Firebase user with DB profile info
+          setUser({
+            ...currentUser,
+            dbId: response.data.user.id,
+            subscriptionTier: response.data.user.subscription_tier
+          });
+        } catch (error) {
+          console.error('Failed to sync user with backend:', error);
+          // If sync fails (e.g. backend down), we still set the firebase user
+          // but might have issues with data-dependent features
+          setUser(currentUser);
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 

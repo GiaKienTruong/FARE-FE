@@ -66,6 +66,12 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={20} color="#ccc" />
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('TryOnHistory')}>
+            <View style={styles.menuIconBox}><Ionicons name="time-outline" size={22} color="#333" /></View>
+            <Text style={styles.menuText}>Try-On History</Text>
+            <Ionicons name="chevron-forward" size={20} color="#ccc" />
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.menuItem}>
             <View style={styles.menuIconBox}><Ionicons name="settings-outline" size={22} color="#333" /></View>
             <Text style={styles.menuText}>Settings</Text>

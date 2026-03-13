@@ -4,13 +4,13 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDdjO9WSHHSU4MUI-EJIB4Ejkt-V1b4F08",
-  authDomain: "fare-50123.firebaseapp.com",
-  projectId: "fare-50123",
-  storageBucket: "fare-50123.firebasestorage.app",
-  messagingSenderId: "821723194841",
-  appId: "1:821723194841:web:617d429032b05b4b1425c8",
-  measurementId: "G-6LT7YG62T2"
+  apiKey: "AIzaSyDvNpA39AauhKe0TcCs7trSx4S1Yhugb-w",
+  authDomain: "fare-7660d.firebaseapp.com",
+  projectId: "fare-7660d",
+  storageBucket: "fare-7660d.firebasestorage.app",
+  messagingSenderId: "913827441701",
+  appId: "1:913827441701:web:fa7bd61174e30a0d7423cc",
+  measurementId: "G-2Z71HLMQ6L"
 };
 
 // Initialize Firebase App (singleton pattern)

@@ -1,191 +1,250 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
+    Dimensions,
     Image,
-    ImageBackground,
     RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import { useFavorites } from '../../context/FavoritesContext';
+import { ALL_PRODUCTS, BRANDS } from '../../data/brandProducts';
+
+const { width } = Dimensions.get('window');
+const CARD_W = (width - 52) / 2;
+
+const TABS = ['Trending', 'New'];
 
 export default function HomeScreen({ navigation }) {
     const { user } = useAuth();
+    const { toggleFavorite, isFavorite } = useFavorites();
     const [refreshing, setRefreshing] = useState(false);
+    const [activeTab, setActiveTab] = useState('Trending');
+    const [selectedBrand, setSelectedBrand] = useState(null);
 
-    // Dữ liệu giả lập cho các brand và sản phẩm (Bạn nên fetch từ API)
-    const brands = [
-        { id: '1', name: 'Yody', logo: 'https://logo.com/yody' },
-        { id: '2', name: 'Pull&Bear', logo: '...' },
-        { id: '3', name: 'Nike', logo: '...' },
-        { id: '4', name: 'H&M', logo: '...' },
-    ];
+    const onRefresh = () => {
+        setRefreshing(true);
+        setTimeout(() => setRefreshing(false), 1000);
+    };
+
+    // Filter by tab + brand
+    const displayProducts = ALL_PRODUCTS.filter(p => {
+        if (activeTab === 'Trending' && p.category !== 'trending') return false;
+        if (activeTab === 'New' && p.category !== 'new') return false;
+        if (selectedBrand && p.brand !== selectedBrand) return false;
+        return true;
+    });
+
+    const handleProductPress = (item) => {
+        navigation.navigate('BrandItemDetail', { item });
+    };
 
     return (
         <View style={styles.container}>
-            {/* Header Custom */}
+            {/* Header */}
             <View style={styles.header}>
-                <View style={styles.userInfo}>
-                    <Image
-                        source={{ uri: 'https://via.placeholder.com/40' }}
-                        style={styles.avatar}
-                    />
-                    <Text style={styles.greeting}>Hi {user?.displayName || 'User'}!</Text>
+                <View>
+                    <Text style={styles.greeting}>Explore Outfits </Text>
+                    <Text style={styles.subGreeting}>Discover your style today</Text>
                 </View>
-                <TouchableOpacity>
-                    <Ionicons name="notifications-outline" size={24} color="black" />
+                <TouchableOpacity style={styles.notifBtn}>
+                    <Ionicons name="notifications-outline" size={22} color="#111" />
                 </TouchableOpacity>
             </View>
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl refreshing={refreshing} />}
+                contentContainerStyle={{ paddingBottom: 100 }}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             >
-                {/* Banner Explore */}
-                <View style={styles.bannerContainer}>
-                    <ImageBackground
-                        source={{ uri: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d' }}
-                        style={styles.bannerImage}
-                        imageStyle={{ borderRadius: 20 }}
-                    >
-                        <View style={styles.bannerOverlay}>
-                            <Text style={styles.bannerTitle}>Explore New{"\n"}Collections</Text>
-                            <TouchableOpacity style={styles.exploreBtn}>
-                                <Text style={styles.exploreText}>Explore more</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </ImageBackground>
-                </View>
-
-                {/* Brand Section */}
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Brand</Text>
-                    <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.brandList}>
-                    {brands.map(brand => (
-                        <View key={brand.id} style={styles.brandItem}>
-                            <View style={styles.brandLogoPlaceholder}><Text>{brand.name[0]}</Text></View>
-                            <Text style={styles.brandName}>{brand.name}</Text>
-                        </View>
-                    ))}
-                </ScrollView>
-
-                {/* Trending Outfits */}
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Trending Outfits</Text>
-                    <TouchableOpacity><Text style={styles.seeAll}>More</Text></TouchableOpacity>
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: 20 }}>
-                    <OutfitCard image="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f" brand="B Side" price="4.5" />
-                    <OutfitCard image="https://images.unsplash.com/photo-1539109132314-34a77bd68d9a" brand="Blaze Milano" price="4.8" />
-                </ScrollView>
-
-                {/* Your Collection (Grid) */}
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Your collection</Text>
-                </View>
-                <View style={styles.collectionGrid}>
-                    <Image source={{ uri: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1' }} style={styles.gridLarge} />
-                    <View style={styles.gridRight}>
-                        <Image source={{ uri: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2' }} style={styles.gridSmall} />
-                        <View style={styles.statsBox}>
-                            <Text style={styles.statsNumber}>99+</Text>
-                            <Text style={styles.statsText}>Outfits</Text>
-                        </View>
+                {/* Banner */}
+                <View style={styles.bannerWrap}>
+                    <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800' }}
+                        style={styles.bannerImg}
+                        resizeMode="cover"
+                    />
+                    <View style={styles.bannerOverlay}>
+                        <Text style={styles.bannerTitle}>Explore New{"\n"}Collections</Text>
+                        <Text style={styles.bannerSub}>From local to global brands</Text>
                     </View>
                 </View>
 
-                <View style={{ height: 100 }} />
+                {/* Brand Row */}
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Brands</Text>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandScroll}>
+                    {/* All button */}
+                    <TouchableOpacity
+                        style={[styles.brandChip, !selectedBrand && styles.brandChipActive]}
+                        onPress={() => setSelectedBrand(null)}
+                    >
+                        <Text style={[styles.brandChipText, !selectedBrand && styles.brandChipTextActive]}>All</Text>
+                    </TouchableOpacity>
+                    {BRANDS.map(b => (
+                        <TouchableOpacity
+                            key={b.id}
+                            style={[styles.brandChip, selectedBrand === b.name && styles.brandChipActive]}
+                            onPress={() => setSelectedBrand(selectedBrand === b.name ? null : b.name)}
+                        >
+                            <Text style={[styles.brandChipText, selectedBrand === b.name && styles.brandChipTextActive]}>
+                                {b.name}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+
+                {/* Tabs */}
+                <View style={styles.tabRow}>
+                    {TABS.map(tab => (
+                        <TouchableOpacity
+                            key={tab}
+                            style={[styles.tab, activeTab === tab && styles.tabActive]}
+                            onPress={() => setActiveTab(tab)}
+                        >
+                            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>{tab}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* Product Grid */}
+                <View style={styles.productGrid}>
+                    {displayProducts.map(item => (
+                        <TouchableOpacity
+                            key={item.id}
+                            style={styles.productCard}
+                            onPress={() => handleProductPress(item)}
+                            activeOpacity={0.85}
+                        >
+                            <Image source={{ uri: item.image }} style={styles.productImg} resizeMode="cover" />
+
+                            {/* Heart Button */}
+                            <TouchableOpacity
+                                style={styles.heartBtn}
+                                onPress={() => toggleFavorite(item.id)}
+                            >
+                                <Ionicons
+                                    name={isFavorite(item.id) ? "heart" : "heart-outline"}
+                                    size={18}
+                                    color={isFavorite(item.id) ? "#EF4444" : "#111"}
+                                />
+                            </TouchableOpacity>
+
+                            <View style={styles.brandTag}>
+                                <Text style={styles.brandTagText}>{item.brand}</Text>
+                            </View>
+                            <View style={styles.productInfo}>
+                                <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
+                                <Text style={styles.productPrice}>{item.price}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                    {displayProducts.length === 0 && (
+                        <View style={styles.emptyProducts}>
+                            <Ionicons name="shirt-outline" size={40} color="#D1D5DB" />
+                            <Text style={styles.emptyText}>No products found</Text>
+                        </View>
+                    )}
+                </View>
             </ScrollView>
-
-        </View>
-    );
-}
-
-function OutfitCard({ image, brand, price }) {
-    return (
-        <View style={styles.outfitCard}>
-            <Image source={{ uri: image }} style={styles.outfitImage} />
-            <TouchableOpacity style={styles.heartBtn}>
-                <Ionicons name="heart-outline" size={18} color="white" />
-            </TouchableOpacity>
-            <View style={styles.outfitInfo}>
-                <Text style={styles.outfitBrand}>{brand}</Text>
-                <Text style={styles.outfitRating}>⭐ {price}</Text>
-            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFF' },
+    container: { flex: 1, backgroundColor: '#fff' },
+
+    // Header
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 50,
-        paddingBottom: 10,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        paddingHorizontal: 20, paddingTop: 50, paddingBottom: 10,
     },
-    userInfo: { flexDirection: 'row', alignItems: 'center' },
-    avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
-    greeting: { fontSize: 18, fontWeight: '700' },
-
-    bannerContainer: { padding: 20 },
-    bannerImage: { height: 180, width: '100%', overflow: 'hidden' },
-    bannerOverlay: { padding: 20, justifyContent: 'center', flex: 1 },
-    bannerTitle: { color: 'white', fontSize: 22, fontWeight: 'bold' },
-    exploreBtn: {
-        backgroundColor: '#1a1a1a',
-        paddingVertical: 8,
-        paddingHorizontal: 15,
-        borderRadius: 20,
-        alignSelf: 'flex-start',
-        marginTop: 10
+    greeting: { fontSize: 17, fontWeight: '800', color: '#111827' },
+    subGreeting: { fontSize: 12, color: '#9CA3AF', marginTop: 1 },
+    notifBtn: {
+        width: 40, height: 40, borderRadius: 20,
+        backgroundColor: '#F3F4F6',
+        justifyContent: 'center', alignItems: 'center',
     },
-    exploreText: { color: 'white', fontSize: 12 },
 
+    // Banner
+    bannerWrap: {
+        marginHorizontal: 20, marginTop: 12, marginBottom: 20,
+        height: 170, borderRadius: 20, overflow: 'hidden',
+    },
+    bannerImg: { width: '100%', height: '100%' },
+    bannerOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.35)',
+        padding: 20, justifyContent: 'flex-end',
+    },
+    bannerTitle: { color: '#fff', fontSize: 22, fontWeight: '800', lineHeight: 28 },
+    bannerSub: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 4 },
+
+    // Section
     sectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        marginTop: 25,
-        marginBottom: 15,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        paddingHorizontal: 20, marginBottom: 12,
     },
-    sectionTitle: { fontSize: 22, fontWeight: 'bold' },
-    seeAll: { color: '#666', fontSize: 13 },
+    sectionTitle: { fontSize: 18, fontWeight: '800', color: '#111827' },
 
-    brandList: { paddingLeft: 20 },
-    brandItem: { alignItems: 'center', marginRight: 25 },
-    brandLogoPlaceholder: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' },
-    brandName: { fontSize: 12, marginTop: 5, color: '#666' },
-
-    outfitCard: { width: 160, height: 220, marginRight: 15, borderRadius: 20, overflow: 'hidden' },
-    outfitImage: { width: '100%', height: '100%' },
-    heartBtn: { position: 'absolute', top: 10, right: 10 },
-    outfitInfo: { position: 'absolute', bottom: 10, left: 10 },
-    outfitBrand: { color: 'white', fontWeight: 'bold' },
-    outfitRating: { color: 'white', fontSize: 12 },
-
-    collectionGrid: { flexDirection: 'row', paddingHorizontal: 20, gap: 10 },
-    gridLarge: { flex: 1.5, height: 200, borderRadius: 20 },
-    gridRight: { flex: 1, gap: 10 },
-    gridSmall: { width: '100%', height: 95, borderRadius: 20 },
-    statsBox: {
-        width: '100%',
-        height: 95,
-        borderRadius: 20,
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#eee',
-        justifyContent: 'center',
-        alignItems: 'center'
+    // Brand chips
+    brandScroll: { paddingLeft: 20, paddingRight: 10, marginBottom: 16 },
+    brandChip: {
+        paddingHorizontal: 16, paddingVertical: 8,
+        borderRadius: 20, backgroundColor: '#F3F4F6',
+        marginRight: 8, borderWidth: 1.5, borderColor: 'transparent',
     },
-    statsNumber: { fontSize: 24, fontWeight: 'bold', color: '#4facfe' },
-    statsText: { fontSize: 12, color: '#666' },
+    brandChipActive: { backgroundColor: '#111827', borderColor: '#111827' },
+    brandChipText: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
+    brandChipTextActive: { color: '#fff' },
+
+    // Tabs
+    tabRow: {
+        flexDirection: 'row', paddingHorizontal: 20,
+        marginBottom: 16, gap: 8,
+    },
+    tab: {
+        paddingHorizontal: 20, paddingVertical: 8,
+        borderRadius: 20, backgroundColor: '#F3F4F6',
+    },
+    tabActive: { backgroundColor: '#71D5F3' },
+    tabText: { fontSize: 13, fontWeight: '700', color: '#6B7280' },
+    tabTextActive: { color: '#fff' },
+
+    // Product grid
+    productGrid: {
+        flexDirection: 'row', flexWrap: 'wrap',
+        paddingHorizontal: 20, gap: 12,
+    },
+    productCard: {
+        width: CARD_W, borderRadius: 16, overflow: 'hidden',
+        backgroundColor: '#F9FAFB', marginBottom: 4,
+    },
+    productImg: { width: '100%', height: CARD_W * 1.25 },
+    heartBtn: {
+        position: 'absolute', top: 8, right: 8,
+        width: 28, height: 28, borderRadius: 14,
+        backgroundColor: 'rgba(255,255,255,0.85)',
+        justifyContent: 'center', alignItems: 'center',
+        zIndex: 10,
+    },
+    brandTag: {
+        position: 'absolute', top: 8, left: 8,
+        backgroundColor: 'rgba(0,0,0,0.65)',
+        paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
+    },
+    brandTagText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+    productInfo: { padding: 10 },
+    productName: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 4, lineHeight: 18 },
+    productPrice: { fontSize: 14, fontWeight: '800', color: '#71D5F3' },
+
+    // Empty
+    emptyProducts: { width: '100%', alignItems: 'center', paddingVertical: 40, gap: 8 },
+    emptyText: { fontSize: 13, color: '#9CA3AF' },
 });
